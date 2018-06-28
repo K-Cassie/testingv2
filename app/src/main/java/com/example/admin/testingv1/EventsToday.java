@@ -18,7 +18,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 
-public class EventsToday extends AppCompatActivity implements View.OnClickListener{
+public class EventsToday extends AppCompatActivity implements View.OnClickListener {
 
     private TextView theDate;
     private Button backToProfile;
@@ -28,7 +28,8 @@ public class EventsToday extends AppCompatActivity implements View.OnClickListen
     private RecyclerView myRecyclerView;
     private DatabaseReference mRef;
     private String userID;
-    private FirebaseRecyclerAdapter <Event, EventViewHolder> recyclerAdapter;
+    private FirebaseRecyclerAdapter<Event, EventViewHolder> recyclerAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,13 +47,13 @@ public class EventsToday extends AppCompatActivity implements View.OnClickListen
 
         Intent incomingIntent = getIntent();
         date = incomingIntent.getStringExtra("date");
-        String [] info = date.split("/");
+        String[] info = date.split("/");
         int day = Integer.parseInt(info[0]);
-        int month = Integer.parseInt(info [1]);
-        int year = Integer.parseInt(info [2]);
+        int month = Integer.parseInt(info[1]);
+        int year = Integer.parseInt(info[2]);
 
         mRef = FirebaseDatabase.getInstance().getReference();
-        int key = year*1000 +month *100 +day;
+        int key = year * 1000 + month * 100 + day;
         Query query = mRef.child("Users").child(userID).child("Events").child(Integer.toString(key));
 
 
@@ -65,30 +66,42 @@ public class EventsToday extends AppCompatActivity implements View.OnClickListen
         recyclerAdapter = new FirebaseRecyclerAdapter<Event, EventViewHolder>
                 (firebaseRecyclerOptions) {
             @Override
-            public EventViewHolder onCreateViewHolder (ViewGroup parent, int viewType) {
+            public EventViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
                 View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.event_info, parent, false);
                 return new EventViewHolder(view);
             }
+
             @Override
             protected void onBindViewHolder(EventViewHolder viewHolder, int position, Event model) {
                 viewHolder.setTitle(model.getTitle());
                 viewHolder.setStartTime(model.getStartTime());
-                viewHolder.setEndTime("-   " +model.getEndTime());
+                viewHolder.setEndTime("-   " + model.getEndTime());
                 viewHolder.setRemarks(model.getRemarks());
+                viewHolder.editBtn.setText("Edit");
+                viewHolder.editBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        /// button click event
+                        Intent intent = new Intent(EventsToday.this, EditEvent.class);
+                        intent.putExtra("date", date);
+                        startActivity(intent);
+                    }
+                });
             }
         };
         myRecyclerView.setAdapter(recyclerAdapter);
     }
 
     @Override
-    protected void onStart(){
+    protected void onStart() {
         super.onStart();
         recyclerAdapter.startListening();
     }
+
     @Override
-    protected void onStop(){
+    protected void onStop() {
         super.onStop();
-        if(recyclerAdapter!= null){
+        if (recyclerAdapter != null) {
             recyclerAdapter.stopListening();
         }
     }

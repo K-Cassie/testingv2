@@ -2,13 +2,17 @@ package com.example.admin.testingv1;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 public class EventViewHolder extends RecyclerView.ViewHolder {
     View mView;
+    Button editBtn;
+
     public EventViewHolder(View itemView) {
         super(itemView);
         mView = itemView;
+        this.editBtn = (Button) mView.findViewById(R.id.editBtn);
     }
 
     public void setTitle(String title_) {
