@@ -21,7 +21,7 @@
         <activity android:name=".ProfileActivity" />
         <activity android:name=".LoginActivity" />
         <activity android:name=".addEvent" />
-        <activity android:name=".EventsToday"/>
+        <activity android:name=".EventsToday" />
     </application>
 
 </manifest>

@@ -46,10 +46,15 @@ public class EventsToday extends AppCompatActivity implements View.OnClickListen
 
         Intent incomingIntent = getIntent();
         date = incomingIntent.getStringExtra("date");
-
+        String [] info = date.split("/");
+        int day = Integer.parseInt(info[0]);
+        int month = Integer.parseInt(info [1]);
+        int year = Integer.parseInt(info [2]);
 
         mRef = FirebaseDatabase.getInstance().getReference();
-        Query query = mRef.child("Users").child(userID).child("Events").child(date);
+        int key = year*1000 +month *100 +day;
+        Query query = mRef.child("Users").child(userID).child("Events").child(Integer.toString(key));
+
 
         theDate.setText(date);
 

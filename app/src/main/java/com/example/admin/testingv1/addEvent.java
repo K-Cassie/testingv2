@@ -63,6 +63,13 @@ public class addEvent extends AppCompatActivity implements View.OnClickListener 
 
         Intent incomingIntent = getIntent();
         date = incomingIntent.getStringExtra("date");
+        String [] info = date.split("/");
+        int day = Integer.parseInt(info[0]);
+        int month = Integer.parseInt(info [1]);
+        int year = Integer.parseInt(info [2]);
+
+        start_Date = year *1000 + month *100 + day;
+        end_Date = start_Date;
 
         remarks = (EditText) findViewById(R.id.remarks);
         eventName = (EditText) findViewById(R.id.eventName);
@@ -76,8 +83,9 @@ public class addEvent extends AppCompatActivity implements View.OnClickListener 
                 Log.d(TAG, "onTimeSet: hh:mm " + hourOfDay + ":" + minute);
                 start_Time = hourOfDay *100 + minute;
                 startTime.setText(getTime(hourOfDay, minute));
-                if(start_Date == end_Date){
-                    endTime.setText(getEndTime(hourOfDay, minute));
+                if(start_Date == end_Date && end_Time<start_Time){
+                    endTime.setText(getTime(hourOfDay, minute));
+                    end_Time = start_Time;
                 }
             }
         };
@@ -85,13 +93,13 @@ public class addEvent extends AppCompatActivity implements View.OnClickListener 
             @Override
             public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                 Log.d(TAG, "onTimeSet: hh:mm " + hourOfDay + ":" + minute);
-
-                String time = hourOfDay + ":" + minute;
-                end_Time = hourOfDay *100 + minute;
-                if (end_Time > start_Time ) {
+                int newEndTime = hourOfDay *100 + minute;
+                if (end_Date >start_Date ) {
                     endTime.setText(getTime(hourOfDay, minute));
-                } else if(end_Date >start_Date) {
+                    end_Time = newEndTime;
+                } else if(newEndTime >= start_Time) {
                     endTime.setText(getTime(hourOfDay, minute));
+                    end_Time = newEndTime;
                 } else {
                     Toast.makeText(addEvent.this, "End time should be after start time.", Toast.LENGTH_LONG).show();
                 }
@@ -115,23 +123,27 @@ public class addEvent extends AppCompatActivity implements View.OnClickListener 
             @Override
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
                 month = month + 1;
-                Log.d(TAG,"onDateSet: mm/dd/yyyy: " + month + "/" + dayOfMonth + "/" + year);
+                Log.d(TAG,"onDateSet: dd/mm/yyyy: " + month + "/" + dayOfMonth + "/" + year);
 
                 String date = dayOfMonth + "/" + month + "/" + year;
                 start_Date = year *1000 + month *100 + dayOfMonth;
                 startDate.setText(date);
-                endDate.setText(date);
+                if(end_Date<start_Date) {
+                    endDate.setText(date);
+                    end_Date = start_Date;
+                }
             }
         };
         endDateSetListener = new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
                 month = month + 1;
-                Log.d(TAG,"onDateSet: mm/dd/yyyy: " + month + "/" + dayOfMonth + "/" + year);
+                Log.d(TAG,"onDateSet: dd/mm/yyyy: " + month + "/" + dayOfMonth + "/" + year);
 
-                String date = month + "/" + dayOfMonth + "/" + year;
-                end_Date = year *1000 + month *100 + dayOfMonth;
-                if(end_Date >= start_Date) {
+                String date = dayOfMonth + "/" + month + "/" + year;
+                int newEndDate = year *1000 + month *100 + dayOfMonth;
+                if(newEndDate >= start_Date) {
+                    end_Date = newEndDate;
                     endDate.setText(date);
                 } else {
                     Toast.makeText(addEvent.this, "End date must be before start date.", Toast.LENGTH_LONG).show();
@@ -201,16 +213,20 @@ public class addEvent extends AppCompatActivity implements View.OnClickListener 
         if(view == addEventBtn) {
             Toast.makeText(addEvent.this, "Added Successfully!", Toast.LENGTH_SHORT).show();
             String userId = firebaseAuth.getCurrentUser().getUid();
-            eventDB = FirebaseDatabase.getInstance().getReference().child("Users").child(userId).child("Events").child(date);
-            String eventId = eventDB.push().getKey();
-            String event_name = eventName.getText().toString().trim();
-            String start_time = startTime.getText().toString().trim();
-            String end_time = endTime.getText().toString().trim();
-            String start_date = startDate.getText().toString().trim();
-            String end_date = endDate.getText().toString().trim();
-            String remarks_ = remarks.getText().toString().trim();
-            Event event = new Event(event_name, start_time, end_time, start_date, end_date, remarks_, eventId);
-            eventDB.child(eventId).setValue(event);
+            int numDays = (end_Date - start_Date)+1;
+            for(int i=0; i<numDays; i++) {
+                int key = start_Date + i;
+                eventDB = FirebaseDatabase.getInstance().getReference().child("Users").child(userId).child("Events").child(Integer.toString(key));
+                String eventId = eventDB.push().getKey();
+                String event_name = eventName.getText().toString().trim();
+                String start_time = startTime.getText().toString().trim();
+                String end_time = endTime.getText().toString().trim();
+                String start_date = startDate.getText().toString().trim();
+                String end_date = endDate.getText().toString().trim();
+                String remarks_ = remarks.getText().toString().trim();
+                Event event = new Event(event_name, start_time, end_time, start_date, end_date, remarks_, eventId);
+                eventDB.child(eventId).setValue(event);
+            }
             Intent intent = new Intent(addEvent.this, EventsToday.class);
             intent.putExtra("date", date);
             startActivity(intent);
@@ -231,7 +247,7 @@ public class addEvent extends AppCompatActivity implements View.OnClickListener 
         return time;
     }
 
-    private String getEndTime (int hourOfDay, int minute){
+    /*private String getEndTime (int hourOfDay, int minute){
         String time;
         if(hourOfDay <9 && minute <10){
             time = "0" + hourOfDay + ":0" + minute;
@@ -242,7 +258,16 @@ public class addEvent extends AppCompatActivity implements View.OnClickListener 
         } else {
             time = hourOfDay+1 + ":" + minute;
         }
+
+        if(hourOfDay >=23){
+            time = "00:" + minute;
+            int day = end_Date%100;
+            int month = end_Date/100%100;
+            int year = end_Date/1000;
+            endDate.setText(day+"/"+month+"/"+ year);
+            end_Date =
+        }
         return time;
     }
+    */
 }
-

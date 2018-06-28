@@ -1,21 +1,25 @@
 package com.example.admin.testingv1;
 
 public class Event {
-    private String title;
+    private String title = "My Event";;
     private String startTime;
     private String endTime;
     private String startDate;
     private String endDate;
-    private String remarks;
+    private String remarks = "";
     private String eventId;
 
     public Event(String title, String startTime, String endTime, String startDate, String endDate, String remarks, String eventId) {
-        this.title = title;
+        if(!title.equals("")){
+            this.title = title;
+        }
         this.startTime = startTime;
         this.endTime = endTime;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.remarks = remarks;
+        if(!remarks.equals("")){
+            this.remarks = remarks;
+        }
         this.eventId = eventId;
     }
 
